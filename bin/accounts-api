@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+"""
+Accounts API Server. An OpenStack ReST API to Accounts.
+"""
+
+import eventlet
+eventlet.monkey_patch(os=False)
+
+import os
+import sys
+
+# If ../accounts/__init__.py exists, add ../ to Python search path, so that
+# it will override what happens to be installed in /usr/(local/)lib/python...
+possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
+                                   os.pardir,
+                                   os.pardir))
+if os.path.exists(os.path.join(possible_topdir, 'accounts', '__init__.py')):
+    sys.path.insert(0, possible_topdir)
+
+from tdafcommon.openstack.common import gettextutils
+
+gettextutils.install('accounts')
+
+from oslo.config import cfg
+
+from tdafcommon.openstack.common import config
+from tdafcommon.openstack.common import wsgi
+
+from tdafcommon.openstack.common import log as logging
+
+import optparse
+
+LOG = logging.getLogger('accounts.api')
+
+if __name__ == '__main__':
+    try:
+        cfg.CONF(project='accounts', prog='accounts-api')
+        cfg.CONF.default_log_levels = ['amqplib=WARN',
+                                       'qpid.messaging=INFO',
+                                       'keystone=INFO',
+                                       'eventlet.wsgi.server=WARN',
+                                       ]
+        logging.setup('accounts')
+
+        app = config.load_paste_app()
+ 
+        port = cfg.CONF.bind_port
+        host = cfg.CONF.bind_host
+        LOG.info('Starting Accounts ReST API on %s:%s' % (host, port))
+        server = wsgi.Server()
+        print 'Starting app:'+str(app)
+        server.start(app, cfg.CONF, default_port=port)
+        server.wait()
+    except RuntimeError as e:
+        sys.exit("ERROR: %s" % e)

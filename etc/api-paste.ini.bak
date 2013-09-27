@@ -1,0 +1,76 @@
+
+# rushstack-api pipeline
+[pipeline:rushstack-api]
+pipeline = versionnegotiation authtoken context apiv1app
+
+# rushstack-api pipeline for standalone rushstack
+# ie. uses alternative auth backend that authenticates users against keystone
+# using username and password instead of validating token (which requires
+# an admin/service token).
+# To enable, in rushstack-api.conf:
+#   [paste_deploy]
+#   flavor = standalone
+#
+[pipeline:rushstack-api-standalone]
+pipeline = versionnegotiation authpassword context apiv1app
+
+# Use this pipeline for keystone auth
+[pipeline:rushstack-api-keystone]
+pipeline = versionnegotiation authtoken context apiv1app
+
+# rushstack-api pipeline for custom cloud backends
+# i.e. in rushstack-api.conf:
+#   [paste_deploy]
+#   flavor = custombackend
+#
+[pipeline:rushstack-api-custombackend]
+pipeline = versionnegotiation context custombackendauth apiv1app
+
+# rushstack-api-cfn pipeline
+[pipeline:rushstack-api-cfn]
+pipeline = cfnversionnegotiation ec2authtoken authtoken context apicfnv1app
+
+# rushstack-api-cfn pipeline for standalone rushstack
+# relies exclusively on authenticating with ec2 signed requests
+[pipeline:rushstack-api-cfn-standalone]
+pipeline = cfnversionnegotiation ec2authtoken context apicfnv1app
+
+# rushstack-api-cloudwatch pipeline
+[pipeline:rushstack-api-cloudwatch]
+pipeline = versionnegotiation ec2authtoken authtoken context apicwapp
+
+# rushstack-api-cloudwatch pipeline for standalone rushstack
+# relies exclusively on authenticating with ec2 signed requests
+[pipeline:rushstack-api-cloudwatch-standalone]
+pipeline = versionnegotiation ec2authtoken context apicwapp
+
+[app:apiv1app]
+paste.app_factory = rushstack.openstack.common.wsgi:app_factory
+rushstack.app_factory = rushstack.api.v1:API
+
+[filter:versionnegotiation]
+paste.filter_factory = rushstack.openstack.common.wsgi:filter_factory
+rushstack.filter_factory = rushstack.api:version_negotiation_filter
+
+[filter:cwversionnegotiation]
+paste.filter_factory = rushstack.openstack.common.wsgi:filter_factory
+rushstack.filter_factory = rushstack.api.cloudwatch:version_negotiation_filter
+
+[filter:context]
+paste.filter_factory = rushstack.common.context:ContextMiddleware_filter_factory
+
+[filter:ec2authtoken]
+paste.filter_factory = rushstack.api.aws.ec2token:EC2Token_filter_factory
+
+# Auth middleware that validates token against keystone
+[filter:authtoken]
+paste.filter_factory = rushstack.common.auth_token:filter_factory
+
+# Auth middleware that validates username/password against keystone
+[filter:authpassword]
+paste.filter_factory = rushstack.common.auth_password:filter_factory
+
+# Auth middleware that validates against custom backend
+[filter:custombackendauth]
+paste.filter_factory = rushstack.common.custom_backend_auth:filter_factory
+

@@ -1,0 +1,20 @@
+Accounts Keystone
+------------------
+
+To be executed as OpenStack admin.
+
+MY_PORT=20000
+function get_id () {
+    echo `"$@" | awk '/ id / { print $4 }'`
+}
+MY_SERVICE=$(get_id keystone service-create \
+    --name myservice \
+    --type myservice \
+    --description="TDAF Myservice Service")
+keystone endpoint-create \
+    --region RegionOne \
+    --service_id $MY_SERVICE \
+    --publicurl "http://127.0.0.1:20000/v1/%(tenant_id)s" \
+    --adminurl "http://127.0.0.1:20000/v1/%(tenant_id)s" \
+    --internalurl "http://127.0.0.1:20000/v1/%(tenant_id)s" 
+

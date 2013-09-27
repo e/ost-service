@@ -1,0 +1,144 @@
+#!/bin/bash
+#
+# rushstack-engine		Start up the Rushstack engine server
+#
+# chkconfig: 2345 55 25
+# description: Rushstack engine provides the basic methods for performing the RUSH provisioning. \
+#              This service starts up the rushstack engine daemon.
+#
+### BEGIN INIT INFO
+# Provides: rushstack-engine
+# Required-Start: $local_fs $network $syslog
+# Required-Stop: $local_fs $syslog
+# Should-Start: $syslog
+# Should-Stop: $network $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Start up the rushstack engine daemon
+# Description:       Rushstack engine executes provisioning of rushstack instances.
+#		     This service starts up the rushstack engine daemon.
+### END INIT INFO
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+# pull in sysconfig settings
+[ -f /etc/sysconfig/rushstack-engine ] && . /etc/sysconfig/rushstack-engine
+
+RETVAL=0
+prog="rushstack-engine"
+lockfile=/var/lock/subsys/$prog
+
+# Some functions to make the below more readable
+DAEMON=rushstack-engine
+PID_FILE=/var/run/rushstack-engine.pid
+TDAF_PATH=/usr/local/tdaf
+DAEMON_PATH=$(echo $TDAF_PATH"/rushstack/bin/"$DAEMON)
+PROC_NAME="python $DAEMON_PATH"
+
+runlevel=$(set -- $(runlevel); eval "echo \$$#" )
+
+start()
+{
+	[ -x $DAEMON_PATH ] || exit 5
+	[ -f /etc/rushstack/rushstack-engine.conf ] || exit 6
+
+	echo -n $"Starting $prog: "
+	$DAEMON_PATH $OPTIONS & success || failure
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch $lockfile
+	pgrep -f "$PROC_NAME" > $PID_FILE
+	echo
+	return $RETVAL
+}
+
+stop()
+{
+	echo -n $"Stopping $prog: "
+	if [ -n "`pidfileofproc $DAEMON`" ] ; then
+	    killproc $DAEMON
+	else
+	    failure $"Stopping $prog"
+	fi
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && rm -f $lockfile
+	echo
+}
+
+reload()
+{
+	echo -n $"Reloading $prog: "
+	if [ -n "`pidfileofproc $DAEMON_PATH`" ] ; then
+	    killproc $DAEMON_PATH -HUP
+	else
+	    failure $"Reloading $prog"
+	fi
+	RETVAL=$?
+	echo
+}
+
+restart() {
+	stop
+	start
+}
+
+force_reload() {
+	restart
+}
+
+rh_status() {
+	status -p $PID_FILE $prog
+}
+
+rh_status_q() {
+	rh_status >/dev/null 2>&1
+}
+
+case "$1" in
+	start)
+		rh_status_q && exit 0
+		start
+		;;
+	stop)
+		if ! rh_status_q; then
+			rm -f $lockfile
+			exit 0
+		fi
+		stop
+		;;
+	restart)
+		restart
+		;;
+	reload)
+		rh_status_q || exit 7
+		reload
+		;;
+	force-reload)
+		force_reload
+		;;
+	condrestart|try-restart)
+		rh_status_q || exit 0
+		if [ -f $lockfile ] ; then
+			do_restart_sanity_check
+			if [ $RETVAL -eq 0 ] ; then
+				stop
+				# avoid race
+				sleep 3
+				start
+			else
+				RETVAL=6
+			fi
+		fi
+		;;
+	status)
+		rh_status
+		RETVAL=$?
+		if [ $RETVAL -eq 3 -a -f $lockfile ] ; then
+			RETVAL=2
+		fi
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|restart|reload|force-reload|condrestart|try-restart|status}"
+		RETVAL=2
+esac
+exit $RETVAL
