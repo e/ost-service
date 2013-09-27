@@ -1,4 +1,4 @@
-tdaf-ost-service-common==0.1
+tdafcommon
 PasteDeploy==1.5.0
 Routes==1.13
 SQLAlchemy>=0.7.8,<0.7.99
