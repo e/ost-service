@@ -35,7 +35,7 @@ from tdafcommon.openstack.common import exception
 from tdafcommon.heatapi import heat
 
 import json
-
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -190,6 +190,22 @@ class EngineServiceWrapper(service.Service):
                 'template': rtc.template.replace ('\n', '\\n'),
                 'timeout_mins': 60,
             }
+            logger.warning('')
+            logger.warning('')
+            logger.warning('')
+            logger.warning('')
+            logger.warning('')
+            logger.warning('')
+            logger.warning('')
+            logger.warning('')
+            logger.warning('hola')
+            logger.warning('')
+            logger.warning('')
+            logger.warning('')
+            logger.warning('')
+            logger.warning('')
+            logger.warning('')
+            logger.warning('')
             heatcln.stacks.create(**stack_info)
         
             stack_list = self.get_stack_list_for_tenant(heatcln,tenant_id)
@@ -345,5 +361,10 @@ class EngineServiceWrapper(service.Service):
             values = {'url':'http://'+ip_info['physical_resource_id']+':5001'}
             db_api.service_stack_update(ctxt, service_id, values)
 
-class AccountsManager(EngineServiceWrapper):
-    pass
+class EngineService(EngineServiceWrapper):
+
+    def __init__(self, *args, **kwargs):
+        super(EngineServiceWrapper, self).__init__(*args, **kwargs)
+        self.start_accounts = self.start_service
+        self.stop_accounts = self.stop_service
+

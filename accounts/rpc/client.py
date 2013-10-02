@@ -75,8 +75,8 @@ class EngineClient(tdafcommon.openstack.common.rpc.proxy.RpcProxy):
         """
         return self.call(ctxt, self.make_msg('start_accounts',
                                              tenant_id=tenant_id,
-                                             accounts_type_id=accounts_type_id,
-                                             accounts_name=accounts_name))
+                                             service_type_id=accounts_type_id,
+                                             service_name=accounts_name))
 
     def stop_accounts(self, ctxt, tenant_id, accounts_id):
         """
@@ -91,7 +91,7 @@ class EngineClient(tdafcommon.openstack.common.rpc.proxy.RpcProxy):
         """
         return self.call(ctxt, self.make_msg('stop_accounts',
                                              tenant_id=tenant_id,
-                                             accounts_id=accounts_id))
+                                             service_id=accounts_id))
 
     def get_accounts(self, req):
         """

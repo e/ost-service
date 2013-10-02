@@ -63,9 +63,9 @@ class AccountsController(object):
     def create_accounts(self, req, body={}):
         """
         Create Accounts service for this tenant
-        Body must contain the accounts_type_id and accounts_name
+        Body must contain the service_type_id and service_name
         """
-        return self.engine.start_accounts_stack(req.context,req.context.tenant_id,body['accounts_type_id'],body['accounts_name'])
+        return self.engine.start_accounts(req.context,req.context.tenant_id,body['service_type_id'],body['service_name'])
     
     @util.identified_accounts
     def delete_accounts(self, req):
