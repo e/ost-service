@@ -1,39 +1,39 @@
 #!/bin/bash
 #
-# rushstack-api		Start up the Rushstack API server
+# accounts-engine		Start up the accounts engine server
 #
 # chkconfig: 2345 55 25
-# description: Rushstack API provides REST access to the basic methods for performing the RUSH provisioning. \
-#              This service starts up the rushstack API daemon.
+# description: accounts engine provides the basic methods for performing the accounts provisioning. \
+#              This service starts up the accounts engine daemon.
 #
 ### BEGIN INIT INFO
-# Provides: rushstack-api
+# Provides: accounts-engine
 # Required-Start: $local_fs $network $syslog
 # Required-Stop: $local_fs $syslog
 # Should-Start: $syslog
 # Should-Stop: $network $syslog
 # Default-Start: 2 3 4 5
 # Default-Stop: 0 1 6
-# Short-Description: Start up the rushstack API daemon
-# Description:       Rushstack API calls the rush stack engine to perform rush actions.
-#		     This service starts up the rushstack API daemon.
+# Short-Description: Start up the accounts engine daemon
+# Description:       accounts engine executes provisioning of accounts instances.
+#		     This service starts up the accounts engine daemon.
 ### END INIT INFO
 
 # source function library
 . /etc/rc.d/init.d/functions
 
 # pull in sysconfig settings
-[ -f /etc/sysconfig/rushstack-api ] && . /etc/sysconfig/rushstack-api
+[ -f /etc/sysconfig/accounts-engine ] && . /etc/sysconfig/accounts-engine
 
 RETVAL=0
-prog="rushstack-api"
+prog="accounts-engine"
 lockfile=/var/lock/subsys/$prog
 
 # Some functions to make the below more readable
-DAEMON=rushstack-api
-PID_FILE=/var/run/rushstack-api.pid
-TDAF_PATH=/usr/local/tdaf
-DAEMON_PATH=$(echo $TDAF_PATH"/rushstack/bin/"$DAEMON)
+DAEMON=accounts-engine
+PID_FILE=/var/run/accounts-engine.pid
+TDAF_PATH=/usr/bin
+DAEMON_PATH=$(echo $TDAF_PATH"/"$DAEMON)
 PROC_NAME="python $DAEMON_PATH"
 
 runlevel=$(set -- $(runlevel); eval "echo \$$#" )
@@ -41,7 +41,7 @@ runlevel=$(set -- $(runlevel); eval "echo \$$#" )
 start()
 {
 	[ -x $DAEMON_PATH ] || exit 5
-	[ -f /etc/rushstack/rushstack-api.conf ] || exit 6
+	[ -f /etc/accounts/accounts-engine.conf ] || exit 6
 
 	echo -n $"Starting $prog: "
 	$DAEMON_PATH $OPTIONS & success || failure

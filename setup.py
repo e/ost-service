@@ -7,5 +7,18 @@ setup(name='accounts',
       license='MIT',
       description='TDAF Accounts Openstack service daemons',
       long_description=readme,
-      packages=find_packages())
+      packages=find_packages(),
+      # scripts to be copied to /usr/bin/
+      scripts=['bin/accounts-api', 'bin/accounts-engine', 'accounts-manage'],
+      # data_files to be copied to /etc
+      data_files=[('/etc/accounts', [
+                        'api-paste.ini,' 'accounts-api.conf', 'accounts.conf',
+                        'accounts-engine.conf'
+                    ]),
+                    ('/etc/init.d', [
+                        'init.d/accounts-engine',
+                        'init.d/accounts-api',
+                    ]),],
+      )
+
 
